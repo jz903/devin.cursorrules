@@ -82,6 +82,14 @@ def create_llm_client(provider="openai"):
             api_version="2024-08-01-preview",
             azure_endpoint="https://msopenai.openai.azure.com"
         )
+    elif provider == "volcengine":
+        api_key = os.getenv('VOLCENGINE_API_KEY')
+        if not api_key:
+            raise ValueError("VOLCENGINE_API_KEY not found in environment variables")
+        return OpenAI(
+            api_key=api_key,
+            base_url="https://ark.cn-beijing.volces.com/api/v3/chat/completions"
+        )
     elif provider == "deepseek":
         api_key = os.getenv('DEEPSEEK_API_KEY')
         if not api_key:
@@ -145,6 +153,8 @@ def query_llm(prompt: str, client=None, model=None, provider="openai", image_pat
                 model = os.getenv('AZURE_OPENAI_MODEL_DEPLOYMENT', 'gpt-4o-ms')  # Get from env with fallback
             elif provider == "deepseek":
                 model = "deepseek-chat"
+            elif provider == "volcengine":
+                model = "ep-20241218234523-nmnmb" # moonshot
             elif provider == "siliconflow":
                 model = "deepseek-ai/DeepSeek-R1"
             elif provider == "anthropic":

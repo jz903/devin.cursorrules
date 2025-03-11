@@ -1,0 +1,128 @@
+{% extends "base.html" %} {% block title %}{{ post.title }} - Reddit
+足球热门话题{% endblock %} {% block content %}
+<div class="row">
+  <div class="col-12">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+          <a href="{{ url_for('index') }}">首页</a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page">帖子详情</li>
+      </ol>
+    </nav>
+  </div>
+</div>
+
+<div class="row mt-3">
+  <div class="col-12">
+    <div class="card mb-4">
+      <div
+        class="card-header d-flex justify-content-between align-items-center"
+      >
+        <h2 class="mb-0">{{ post.title }}</h2>
+        <a
+          href="{{ post.permalink }}"
+          target="_blank"
+          class="btn btn-sm btn-outline-primary"
+          >Reddit 原帖</a
+        >
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          <small class="text-muted">
+            作者: {{ post.author }} | 得分: {{ post.score }} | 评论数: {{
+            post.num_comments }} | 发布于: {{ post.created_utc }}
+          </small>
+        </div>
+
+        {% if post.selftext %}
+        <div class="post-content mb-4">{{ post.selftext }}</div>
+        {% else %}
+        <div class="post-content mb-4">
+          <em>无正文内容</em>
+        </div>
+        {% endif %} {% if post.url and post.url != post.permalink %}
+        <div class="mb-3">
+          <a
+            href="{{ post.url }}"
+            target="_blank"
+            class="btn btn-sm btn-outline-secondary"
+          >
+            查看链接: {{ post.url }}
+          </a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-6">
+    <div class="card mb-4">
+      <div class="card-header">
+        <h3 class="mb-0">热门评论</h3>
+      </div>
+      <div class="card-body">
+        {% if comments %}
+        <div class="comments-list">
+          {% for comment in comments %}
+          <div class="comment mb-4">
+            <div class="comment-header mb-2">
+              <strong>{{ comment.author }}</strong>
+              <small class="text-muted">
+                得分: {{ comment.score }} | 发布于: {{ comment.created_utc }}
+              </small>
+            </div>
+            <div class="comment-body">{{ comment.body }}</div>
+          </div>
+          {% if not loop.last %}
+          <hr />
+          {% endif %} {% endfor %}
+        </div>
+        {% else %}
+        <p>暂无评论</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card mb-4">
+      <div class="card-header">
+        <h3 class="mb-0">舆论风向分析</h3>
+        {% if analyzed_at %}
+        <small class="text-muted">分析时间: {{ analyzed_at }}</small>
+        {% endif %}
+      </div>
+      <div class="card-body">
+        <div class="analysis-content">{{ analysis_html|safe }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_css %}
+<style>
+  .comment-body {
+    white-space: pre-line;
+  }
+  .analysis-content h1,
+  .analysis-content h2,
+  .analysis-content h3 {
+    font-size: 1.5rem;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+  }
+  .analysis-content h4,
+  .analysis-content h5,
+  .analysis-content h6 {
+    font-size: 1.25rem;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+  }
+  .analysis-content ul,
+  .analysis-content ol {
+    padding-left: 1.5rem;
+  }
+</style>
+{% endblock %}

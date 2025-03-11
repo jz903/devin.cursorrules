@@ -1,6 +1,6 @@
 # Instructions
 
-During your interaction with the user, if you find anything reusable in this project (e.g. version of a library, model name), especially about a fix to a mistake you made or a correction you received, you should take note in the `Lessons` section in the `.cursorrules` file so you will not make the same mistake again. 
+During your interaction with the user, if you find anything reusable in this project (e.g. version of a library, model name), especially about a fix to a mistake you made or a correction you received, you should take note in the `Lessons` section in the `.cursorrules` file so you will not make the same mistake again.
 
 You should also use the `.cursorrules` file as a Scratchpad to organize your thoughts. Especially when you receive a new task, you should first review the content of the Scratchpad, clear old different task if necessary, first explain the task, and plan the steps you need to take to complete the task. You can use todo markers to indicate the progress, e.g.
 [X] Task 1
@@ -19,16 +19,19 @@ Note all the tools are in python. So in the case you need to do batch processing
 The screenshot verification workflow allows you to capture screenshots of web pages and verify their appearance using LLMs. The following tools are available:
 
 1. Screenshot Capture:
+
 ```bash
 venv/bin/python tools/screenshot_utils.py URL [--output OUTPUT] [--width WIDTH] [--height HEIGHT]
 ```
 
 2. LLM Verification with Images:
+
 ```bash
 venv/bin/python tools/llm_api.py --prompt "Your verification question" --provider {openai|anthropic} --image path/to/screenshot.png
 ```
 
 Example workflow:
+
 ```python
 from screenshot_utils import take_screenshot_sync
 from llm_api import query_llm
@@ -50,11 +53,13 @@ print(response)
 ## LLM
 
 You always have an LLM at your side to help you with the task. For simple tasks, you could invoke the LLM by running the following command:
+
 ```
 venv/bin/python ./tools/llm_api.py --prompt "What is the capital of France?" --provider "anthropic"
 ```
 
 The LLM API supports multiple providers:
+
 - OpenAI (default, model: gpt-4o)
 - Azure OpenAI (model: configured via AZURE_OPENAI_MODEL_DEPLOYMENT in .env file, defaults to gpt-4o-ms)
 - DeepSeek (model: deepseek-chat)
@@ -67,23 +72,29 @@ But usually it's a better idea to check the content of the file and use the APIs
 ## Web browser
 
 You could use the `tools/web_scraper.py` file to scrape the web.
+
 ```
 venv/bin/python ./tools/web_scraper.py --max-concurrent 3 URL1 URL2 URL3
 ```
+
 This will output the content of the web pages.
 
 ## Search engine
 
 You could use the `tools/search_engine.py` file to search the web.
+
 ```
 venv/bin/python ./tools/search_engine.py "your search keywords"
 ```
+
 This will output the search results in the following format:
+
 ```
 URL: https://example.com
 Title: This is the title of the search result
 Snippet: This is a snippet of the search result
 ```
+
 If needed, you can further use the `web_scraper.py` file to scrape the web page content.
 
 # Lessons
@@ -104,3 +115,34 @@ If needed, you can further use the `web_scraper.py` file to scrape the web page 
 - When searching for recent news, use the current year (2025) instead of previous years, or simply use the "recent" keyword to get the latest information
 
 # Scratchpad
+
+## Reddit Soccer 热门话题展示网页
+
+任务：创建一个网页，定期将 Reddit soccer 中的热门话题展示出来发布一篇文章，文章要求列出网友热议的评论，并通过 LLM 总结出舆论风向。
+
+计划：
+[X] 1. 创建 Reddit API 爬虫脚本，获取 r/soccer 热门话题和评论
+[X] 2. 创建 LLM 分析脚本，分析评论并总结舆论风向
+[X] 3. 创建 Web 应用框架（使用 Flask）
+[X] 4. 设计前端页面（HTML/CSS/JS）
+[X] 5. 实现定时任务功能
+[X] 6. 集成所有组件
+[X] 7. 测试应用
+[X] 8. 编写文档
+
+项目总结：
+
+- 使用 Flask 创建了一个 Web 应用，用于展示 Reddit r/soccer 板块的热门话题
+- 使用 PRAW 库获取 Reddit 热门话题和评论
+- 使用 LLM 分析评论并总结舆论风向
+- 使用 APScheduler 实现定时任务功能
+- 使用 Bootstrap 5 设计了美观的前端页面
+- 提供了 API 接口，方便其他应用集成
+
+使用方法：
+
+1. 配置 .env 文件，填写 Reddit API 凭据和其他配置
+2. 运行 python run.py 启动应用
+3. 访问 http://localhost:5000 查看热门话题
+4. 点击"查看详情"查看话题详情、热门评论和舆论分析
+5. 点击导航栏中的"刷新数据"手动更新数据

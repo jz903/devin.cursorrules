@@ -1,0 +1,55 @@
+{% extends "base.html" %} {% block title %}Reddit 足球热门话题 - 首页{% endblock
+%} {% block content %}
+<div class="row">
+  <div class="col-12">
+    <h1 class="mb-4">Reddit 足球热门话题</h1>
+    <p class="lead">
+      这里展示了 Reddit r/soccer 板块的热门话题，并通过 AI
+      分析了网友评论的舆论风向。
+    </p>
+  </div>
+</div>
+
+{% if posts %}
+<div class="row mt-4">
+  {% for post_data in posts %}
+  <div class="col-md-6 mb-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title">{{ post_data.post.title }}</h5>
+        <h6 class="card-subtitle mb-2 text-muted">
+          <small>
+            得分: {{ post_data.post.score }} | 评论: {{
+            post_data.post.num_comments }} | 发布于: {{
+            post_data.post.created_utc }}
+          </small>
+        </h6>
+        <p class="card-text">
+          {% if post_data.post.selftext %} {{ post_data.post.selftext[:200] }}{%
+          if post_data.post.selftext|length > 200 %}...{% endif %} {% else %}
+          <em>无正文内容</em>
+          {% endif %}
+        </p>
+      </div>
+      <div class="card-footer">
+        <a
+          href="{{ url_for('view_post', post_id=post_data.post.id) }}"
+          class="btn btn-primary"
+          >查看详情</a
+        >
+        <a
+          href="{{ post_data.post.permalink }}"
+          target="_blank"
+          class="btn btn-outline-secondary"
+          >Reddit 原帖</a
+        >
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-info mt-4">
+  <p>暂无数据，请点击导航栏中的"刷新数据"按钮获取最新内容。</p>
+</div>
+{% endif %} {% endblock %}
