@@ -20,38 +20,42 @@ The screenshot verification workflow allows you to capture screenshots of web pa
 
 1. Screenshot Capture:
 ```bash
-npx tsx tools/screenshot_utils.ts URL [--output OUTPUT] [--width WIDTH] [--height HEIGHT]
+npx tsx src/tools/screenshot_utils.ts URL [--output OUTPUT] [--width WIDTH] [--height HEIGHT]
 ```
 
 2. LLM Verification with Images:
 ```bash
-npx tsx tools/llm_api.ts --prompt "Your verification question" --provider {openai|anthropic} --image path/to/screenshot.png
+npx tsx src/tools/llm_api.ts --prompt "Your verification question" --provider {openai|anthropic} --image path/to/screenshot.png
 ```
 
 Example workflow:
-```python
-from screenshot_utils import take_screenshot_sync
-from llm_api import query_llm
+```typescript
+import { takeScreenshot } from '../src/tools/screenshot_utils';
+import { queryLlm } from '../src/tools/llm_api';
 
-# Take a screenshot
+// Take a screenshot
+async function verifyWebpage() {
+  const screenshotPath = await takeScreenshot('https://example.com', 'screenshot.png');
 
-screenshot_path = take_screenshot_sync('https://example.com', 'screenshot.png')
-
-# Verify with LLM
-
-response = query_llm(
+  // Verify with LLM
+  const response = await queryLlm(
     "What is the background color and title of this webpage?",
-    provider="openai",  # or "anthropic"
-    image_path=screenshot_path
-)
-print(response)
+    null,
+    null,
+    "openai",  // or "anthropic"
+    screenshotPath
+  );
+  console.log(response);
+}
+
+verifyWebpage().catch(console.error);
 ```
 
 ## LLM
 
 You always have an LLM at your side to help you with the task. For simple tasks, you could invoke the LLM by running the following command:
 ```
-npx tsx ./tools/llm_api.ts --prompt "What is the capital of France?" --provider "anthropic"
+npx tsx src/tools/llm_api.ts --prompt "What is the capital of France?" --provider "anthropic"
 ```
 
 The LLM API supports multiple providers:
@@ -62,21 +66,54 @@ The LLM API supports multiple providers:
 - Gemini (model: gemini-pro)
 - Local LLM (model: Qwen/Qwen2.5-32B-Instruct-AWQ)
 
-But usually it's a better idea to check the content of the file and use the APIs in the `tools/llm_api.ts` file to invoke the LLM if needed.
+But usually it's a better idea to check the content of the file and use the APIs in the `src/tools/llm_api.ts` file to invoke the LLM if needed:
+
+```typescript
+import { queryLlm } from '../src/tools/llm_api';
+
+async function askLlm() {
+  const response = await queryLlm(
+    "What is the capital of France?",
+    null,
+    null,
+    "anthropic"
+  );
+  console.log(response);
+}
+
+askLlm().catch(console.error);
+```
 
 ## Web browser
 
-You could use the `tools/web_scraper.ts` file to scrape the web.
+You could use the `src/tools/web_scraper.ts` file to scrape the web.
 ```
-npx tsx ./tools/web_scraper.ts --max-concurrent 3 URL1 URL2 URL3
+npx tsx src/tools/web_scraper.ts --max-concurrent 3 URL1 URL2 URL3
 ```
 This will output the content of the web pages.
 
+You can also use the API programmatically:
+
+```typescript
+import { processUrls } from '../src/tools/web_scraper';
+
+async function scrapeWebsites() {
+  const urls = ['https://example.com', 'https://example.org'];
+  const contents = await processUrls(urls, 3); // 3 is maxConcurrent
+  contents.forEach((content, index) => {
+    console.log(`Content from ${urls[index]}:`);
+    console.log(content);
+  });
+}
+
+scrapeWebsites().catch(console.error);
+```
+
 ## Search engine
 
-You could use the `tools/search_engine.ts` file to search the web.
+You could use the `src/tools/search_engine.ts` file to search the web.
 ```
-npx tsx ./tools/search_engine.ts "your search keywords"
+npx tsx src/tools/search_engine.ts "your search keywords"
 ```
 This will output the search results in the following format:
 ```
@@ -84,6 +121,20 @@ URL: https://example.com
 Title: This is the title of the search result
 Snippet: This is a snippet of the search result
 ```
+
+You can also use the API programmatically:
+
+```typescript
+import { searchWithRetry, formatResults } from '../src/tools/search_engine';
+
+async function searchWeb() {
+  const results = await searchWithRetry("your search keywords", 10, 3);
+  formatResults(results);
+}
+
+searchWeb().catch(console.error);
+```
+
 If needed, you can further use the `web_scraper.ts` file to scrape the web page content.
 
 # Lessons
@@ -162,3 +213,15 @@ If needed, you can further use the `web_scraper.ts` file to scrape the web page 
 3. 改进错误处理和日志记录
 4. 添加更多的文档和示例
 5. 实现更多的功能和工具
+
+## 将 cursor rules 里的 tools 更新为 ts 的调用
+
+任务：将 .cursorrules 文件中的工具部分从 Python 示例更新为 TypeScript 示例。
+
+### 计划
+[X] 查看当前的 .cursorrules 文件内容
+[X] 检查 TypeScript 版本的工具文件
+[X] 更新 .cursorrules 文件中的工具部分
+  [X] 更新命令行调用路径
+  [X] 将 Python 示例代码转换为 TypeScript 示例代码
+  [X] 添加更多的 TypeScript API 使用示例
