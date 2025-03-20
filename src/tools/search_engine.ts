@@ -1,7 +1,10 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
-import { duckDuckGoSearch } from 'duckduckgo-search';
+import * as DDG from 'duck-duck-scrape';
+
+// 设置环境变量代理
+process.env.proxy = 'http://127.0.0.1:7890';
 
 interface SearchResult {
     href: string;
@@ -26,23 +29,38 @@ export async function searchWithRetry(
         try {
             console.error(`调试: 搜索查询: ${query} (尝试 ${attempt + 1}/${maxRetries})`);
 
-            // 使用duckduckgo-search库进行搜索
-            const results = await duckDuckGoSearch(query, {
-                safeSearch: 'moderate',
-                time: 'y',
-                maxResults: maxResults
-            });
+            // 配置needle选项
+            const needleOptions = {
+                open_timeout: 10000,         // 连接超时10秒
+                response_timeout: 30000,     // 响应超时30秒
+                follow_max: 5,               // 最多跟随5次重定向
+                compressed: true,            // 支持压缩
+                user_agent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36', // 模拟Chrome浏览器
+                follow_set_cookies: true,    // 跟随设置的cookies
+                parse_response: 'json',      // 自动解析JSON响应
+                proxy: process.env.proxy // 使用环境变量中的代理
+            };
 
-            if (!results || results.length === 0) {
+            // 使用duck-duck-scrape库进行搜索
+            const searchResults = await DDG.search(query, {
+                safeSearch: DDG.SafeSearchType.MODERATE,
+                time: DDG.SearchTimeType.YEAR,
+                region: 'wt-wt'  // 全球区域
+            }, needleOptions);
+
+            if (!searchResults || searchResults.noResults || !searchResults.results || searchResults.results.length === 0) {
                 console.error("调试: 未找到结果");
                 return [];
             }
 
+            // 将搜索结果限制在指定数量
+            const limitedResults = searchResults.results.slice(0, maxResults);
+
             // 将结果转换为我们的SearchResult格式
-            const formattedResults: SearchResult[] = results.map((r) => ({
-                href: r.url,
-                title: r.title,
-                body: r.description
+            const formattedResults: SearchResult[] = limitedResults.map((r) => ({
+                href: r.url || '',
+                title: r.title || '',
+                body: r.description || ''
             }));
 
             console.error(`调试: 找到 ${formattedResults.length} 个结果`);
@@ -51,8 +69,10 @@ export async function searchWithRetry(
         } catch (e) {
             console.error(`错误: 尝试 ${attempt + 1}/${maxRetries} 失败: ${e}`);
             if (attempt < maxRetries - 1) {  // 如果不是最后一次尝试
-                console.error(`调试: 等待1秒后重试...`);
-                await new Promise(resolve => setTimeout(resolve, 1000));  // 等待1秒后重试
+                // 使用指数退避增加等待时间
+                const waitTime = Math.pow(2, attempt) * 1000;
+                console.error(`调试: 等待${waitTime / 1000}秒后重试...`);
+                await new Promise(resolve => setTimeout(resolve, waitTime));
             } else {
                 console.error(`错误: 所有 ${maxRetries} 次尝试都失败`);
                 throw e;
@@ -92,6 +112,8 @@ export async function search(
         const results = await searchWithRetry(query, maxResults, maxRetries);
         if (results.length > 0) {
             formatResults(results);
+        } else {
+            console.log("未找到任何结果。");
         }
     } catch (e) {
         console.error(`错误: 搜索失败: ${e}`);
