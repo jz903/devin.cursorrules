@@ -1,0 +1,91 @@
+---
+description: 导入各月份的70个大中城市商品住宅销售价格变动情况数据
+globs: 
+alwaysApply: false
+---
+
+# 导入房价数据流程
+
+任务：创建一个Cursor Rule，用于导入各月份的70个大中城市商品住宅销售价格变动情况数据。
+
+## 数据导入流程
+
+以下是导入房价数据的标准流程：
+
+1. 确定数据来源
+   - 国家统计局网站：https://www.stats.gov.cn/sj/zxfb/
+   - 找到对应月份的70个大中城市商品住宅销售价格变动情况数据
+
+2. 创建数据目录和文件
+```bash
+mkdir -p housing_price/data/[年月]
+```
+
+3. 尝试获取数据
+   - 步骤1：如果README里没有原始数据链接，就通过search_engine工具在国家统计局网站搜索关键词，获取匹配的结果，作为 [URL]
+   ```bash
+   npx tsx src/tools/search_engine.ts "[年月]70个大中城市商品住宅销售价格变动情况" --site "www.stats.gov.cn"
+   ```
+
+   - 步骤2：使用screenshot_utils工具截取网页截图，不需要使用LLM来分析截图内容
+   ```bash
+   npx tsx src/tools/screenshot_utils.ts [URL] --output housing_price/data/[年月]/screenshot.png
+   ```
+   
+   - 步骤3：使用housing_price_scraper抓取表格数据，生成housing_price_index.csv文件
+   ```bash
+   npx tsx src/tools/housing_price_scraper.ts [URL] --output housing_price/data/[年月]/housing_price_index.csv
+   ```
+
+4. 创建README.md文件
+   ```markdown
+   # [年]年[月]份70个大中城市商品住宅销售价格变动情况
+   
+   ## 数据来源
+   
+   本数据来源于国家统计局官方网站发布的《[年]年[月]份70个大中城市商品住宅销售价格变动情况》统计数据。
+   
+   原始数据链接：[URL]
+   ```
+
+6. 验证数据
+   ```bash
+   head -n 10 housing_price/data/[年月]/housing_price_index.csv
+   cat housing_price/data/[年月]/README.md
+   ls -la housing_price/data/[年月]
+   ```
+
+## 数据来源
+
+本数据来源于国家统计局官方网站发布的《{year}年{month}份70个大中城市商品住宅销售价格变动情况》统计数据。
+
+原始数据链接：[{url}](mdc:{url})
+
+## 数据说明
+
+本数据集包含CSV文件：
+
+`housing_price_index.csv`：包含70个大中城市新建商品住宅和二手住宅销售价格环比指数和同比指数
+
+### 指标说明
+
+- **环比指数**：与上月相比的价格变动指数，上月=100
+- **同比指数**：与上年同月相比的价格变动指数，上年同月=100
+
+### 数据格式
+
+#### housing_price_index.csv
+
+包含以下字段：
+- 城市：70个大中城市名称
+- 新建商品住宅销售价格环比指数：当月与上月相比的新建商品住宅价格变动指数
+- 新建商品住宅销售价格同比指数：当月与上年同月相比的新建商品住宅价格变动指数
+- 二手住宅销售价格环比指数：当月与上月相比的二手住宅价格变动指数
+- 二手住宅销售价格同比指数：当月与上年同月相比的二手住宅价格变动指数
+
+## 数据分析提示
+
+1. 环比指数大于100表示价格上涨，小于100表示价格下跌
+2. 同比指数大于100表示价格高于去年同期，小于100表示价格低于去年同期
+3. 可以通过对比不同城市的房价变动情况，分析房地产市场的区域差异
+
