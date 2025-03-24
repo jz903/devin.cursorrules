@@ -23,13 +23,12 @@
     "@anthropic-ai/sdk": "^0.18.0",
     "@google/generative-ai": "^0.2.1",
     "@types/mime-types": "^2.1.4",
-    "axios": "^1.6.7",
     "commander": "^12.0.0",
     "dotenv": "^16.4.5",
-    "duckduckgo-search": "^1.0.7",
-    "node-html-parser": "^6.1.12",
+    "duck-duck-scrape": "^2.2.7",
     "mime-types": "^2.1.35",
+    "node-html-parser": "^6.1.12",
     "openai": "^4.28.0",
-    "playwright": "^1.42.1"
+    "playwright": "^1.51.0"
   }
 }
